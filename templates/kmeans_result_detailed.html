@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}
+KMeans Result Detailed
+{% endblock %}
+
+{% block content %}
+<h1>Detail</h1>
+
+<!-- Pesan Flash -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div>
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+{% endwith %}
+
+<!-- Highlight Kota dan Vendor -->
+<div class="d-flex flex-wrap gap-3 mb-4">
+    <div class="p-2 border rounded bg-primary text-white">
+        <h5 class="mb-0">Kota Paling Banyak Telat</h5>
+        <p class="mb-0">{{ top_city or "No Data" }}</p>
+        <p class="mb-0">Total: {{ top_city_total }}</p>
+    </div>
+    <div class="p-2 border rounded bg-light text-dark">
+        <h5 class="mb-0">Vendor {{ top_city or "N/A" }}</h5>
+        <p class="mb-0">{{ top_vendor or "No Data" }}</p>
+        <p class="mb-0">Total: {{ top_vendor_total }}</p>
+    </div>
+</div>
+
+<!-- Filter Form -->
+<form method="get" action="{{ url_for('kmeans_bp.kmeans_result_detailed_view') }}" class="d-flex flex-wrap gap-3 mb-3">
+    <!-- Dropdown Destination -->
+    <div>
+        <label for="destination" class="form-label">Destination:</label>
+        <select name="destination" id="destination" class="form-select">
+            <option value="" {% if not destination_filter %}selected{% endif %}>All</option>
+            {% for destination in destinations %}
+            <option value="{{ destination }}" {% if destination == destination_filter %}selected{% endif %}>{{ destination }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Dropdown Vendor -->
+    <div>
+        <label for="vendor" class="form-label">Vendor:</label>
+        <select name="vendor" id="vendor" class="form-select">
+            <option value="" {% if not vendor_filter %}selected{% endif %}>All</option>
+            {% for vendor in vendors %}
+            <option value="{{ vendor }}" {% if vendor == vendor_filter %}selected{% endif %}>{{ vendor }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Dropdown Status -->
+    <div>
+        <label for="status" class="form-label">Status:</label>
+        <select name="status" id="status" class="form-select">
+            <option value="" {% if not status_filter %}selected{% endif %}>All</option>
+            {% for status in statuses %}
+            <option value="{{ status }}" {% if status == status_filter %}selected{% endif %}>{{ status }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Dropdown Order By -->
+<div>
+    <label for="order_by" class="form-label">Urutkan:</label>
+    <select name="order_by" id="order_by" class="form-select">
+        <option value="desc" {% if order_by == 'desc' %}selected{% endif %}>Paling Telat/Tepat Waktu (Terbanyak)</option>
+        <option value="asc" {% if order_by == 'asc' %}selected{% endif %}>Paling Telat/Tepat Waktu (Terkecil)</option>
+    </select>
+</div>
+
+
+    <!-- Submit Button -->
+    <div class="align-self-end">
+        <button type="submit" class="btn btn-primary">Filter</button>
+    </div>
+</form>
+
+<!-- Tabel Data -->
+<div class="table-responsive" style="max-height: 500px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 5px;">
+    <table class="table table-striped mb-0">
+        <thead style="position: sticky; top: 0; background-color: #f8f9fa; z-index: 1;">
+            <tr>
+                <th>Destination</th>
+                <th>Vendor</th>
+                <th>Status</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if data %}
+                {% for row in data %}
+                <tr>
+                    <td>{{ row['destination'] }}</td>
+                    <td>{{ row['vendor'] }}</td>
+                    <td>{{ row['status'] }}</td>
+                    <td>{{ row['total'] }}</td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="4" class="text-center">No data available.</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination -->
+<div class="d-flex justify-content-between align-items-center mt-4">
+    <div>
+        <p class="mb-0">Results: {{ (page - 1) * per_page + 1 }} - {{ page * per_page if page * per_page < total_count else total_count }} of {{ total_count }}</p>
+    </div>
+    <nav>
+        <ul class="pagination mb-0">
+            {% if page > 1 %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('kmeans_bp.kmeans_result_detailed_view', page=1, per_page=per_page, destination=destination_filter, vendor=vendor_filter, status=status_filter) }}">&laquo;</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('kmeans_bp.kmeans_result_detailed_view', page=page-1, per_page=per_page, destination=destination_filter, vendor=vendor_filter, status=status_filter) }}">&lt;</a>
+            </li>
+            {% endif %}
+            {% for p in range(1, total_pages + 1) %}
+            {% if p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
+            <li class="page-item {% if page == p %}active{% endif %}">
+                <a class="page-link" href="{{ url_for('kmeans_bp.kmeans_result_detailed_view', page=p, per_page=per_page, destination=destination_filter, vendor=vendor_filter, status=status_filter) }}">{{ p }}</a>
+            </li>
+            {% elif p == page - 3 or p == page + 3 %}
+            <li class="page-item disabled"><a class="page-link">...</a></li>
+            {% endif %}
+            {% endfor %}
+            {% if page < total_pages %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('kmeans_bp.kmeans_result_detailed_view', page=page+1, per_page=per_page, destination=destination_filter, vendor=vendor_filter, status=status_filter) }}">&gt;</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('kmeans_bp.kmeans_result_detailed_view', page=total_pages, per_page=per_page, destination=destination_filter, vendor=vendor_filter, status=status_filter) }}">&raquo;</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+
+{% endblock %}

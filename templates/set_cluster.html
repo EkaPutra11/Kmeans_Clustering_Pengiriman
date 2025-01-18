@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}
+Set Cluster
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center">Set Cluster</h1>
+    <p class="text-center text-muted">Atur jumlah cluster, tipe centroid, dan iterasi maksimum untuk algoritma K-Means</p>
+
+    <!-- Tampilkan Pesan Flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div>
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- Form Input -->
+    <form method="POST" action="{{ url_for('kmeans_bp.set_cluster') }}">
+        <div class="mb-3">
+            <label for="num_clusters" class="form-label">Jumlah Cluster</label>
+            <input type="number" name="num_clusters" id="num_clusters" class="form-control" min="1" placeholder="Masukkan jumlah cluster" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="max_iter" class="form-label">Iterasi Maksimum</label>
+            <input type="number" name="max_iter" id="max_iter" class="form-control" min="1" placeholder="Masukkan jumlah iterasi maksimum" required>
+        </div>
+
+        <div class="d-grid">
+            <button type="submit" class="btn btn-primary">Simpan</button>
+        </div>
+    </form>
+
+    <!-- Tombol Reset -->
+    {% if iteration_results_per_city or cluster_summary_per_city %}
+    <div class="d-flex justify-content-end mt-3">
+        <form method="POST" action="{{ url_for('kmeans_bp.delete_results_file') }}">
+            <button type="submit" class="btn btn-danger">Reset</button>
+        </form>
+    </div>
+    {% endif %}
+
+    <!-- Tampilkan Hasil Iterasi -->
+    {% if iteration_results_per_city %}
+        <hr>
+        <h3>Hasil Iterasi per Kota</h3>
+        {% for city, iterations in iteration_results_per_city.items() %}
+        <h4>Kota: {{ city }}</h4>
+        {% for iteration in iterations %}
+        <h5>Iterasi ke-{{ iteration.iterasi }}</h5>
+        <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>STT Number</th> <!-- Kolom STT Number -->
+                        <th>Vendor</th>
+                        <th>Gap Hours</th>
+                        {% for i in range(iteration.centroids|length) %}
+                        <th>Jarak ke C{{ i + 1 }}</th>
+                        {% endfor %}
+                        <th>Cluster</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row_index in range(iteration.gap_hours|length) %}
+                    <tr>
+                        <td>{{ iteration.stt_numbers[row_index] }}</td> <!-- Tampilkan STT Number -->
+                        <td>{{ iteration.vendors[row_index] }}</td>
+                        <td>{{ iteration.gap_hours[row_index] }}</td>
+                        {% for distance in iteration.distances[row_index] %}
+                        <td>{{ distance }}</td>
+                        {% endfor %}
+                        <td>{{ iteration.clusters[row_index] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+            <h5>Centroid pada Iterasi ke-{{ iteration.iterasi }}</h5>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        {% for i in range(iteration.centroids|length) %}
+                        <th>C{{ i + 1 }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        {% for centroid in iteration.centroids %}
+                        <td>{{ centroid }}</td>
+                        {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        {% endfor %}
+        {% endfor %}
+    {% endif %}
+
+    <!-- Tampilkan Rata-Rata Gap Hours per Cluster -->
+    {% if cluster_averages %}
+    <hr>
+    <h3>Rata-Rata Gap Hours per Cluster</h3>
+    <div>
+        {% for city, averages in cluster_averages.items() %}
+            <h4>Kota: {{ city }}</h4>
+            <ul>
+                {% for cluster, avg in averages.items() %}
+                    <li>Cluster {{ cluster }}: {{ avg|round(2) }} jam</li>
+                {% endfor %}
+            </ul>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Tampilkan Ringkasan Cluster -->
+    {% if cluster_summary_per_city %}
+    <hr>
+    <h3>Ringkasan Cluster per Kota</h3>
+    {% for city, summary in cluster_summary_per_city.items() %}
+    <h4>Kota: {{ city }}</h4>
+    <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>STT Number</th> <!-- Kolom STT Number -->
+                    <th>Vendor</th>
+                    <th>Gap Hours</th>
+                    <th>Cluster</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for stt_number, vendor, gap_hour, cluster in zip(summary.stt_numbers, summary.vendors, summary.gap_hours, summary.clusters) %}
+                <tr>
+                    <td>{{ stt_number }}</td> <!-- Tampilkan STT Number -->
+                    <td>{{ vendor }}</td>
+                    <td>{{ gap_hour }}</td>
+                    <td>{{ cluster }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- Tabel Hasil Cluster 1, 2, dan 3 -->
+    {% if cluster_summary_per_city %}
+    <hr>
+    <h3>Hasil Data Cluster</h3>
+    <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Kota</th>
+                    <th>Cluster 1</th>
+                    <th>Cluster 2</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for city, summary in cluster_summary_per_city.items() %}
+                <tr>
+                    <td>{{ city }}</td>
+                    <td>{{ summary.clusters.count(0) }}</td>
+                    <td>{{ summary.clusters.count(1) }}</td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <td><strong>Total</strong></td>
+                    <td><strong>{{ total_cluster_1 }}</strong></td>
+                    <td><strong>{{ total_cluster_2 }}</strong></td>
+                </tr>
+            </tbody>
+        </table>
+        <!-- Tombol Simpan ke Tabel -->
+{% if cluster_summary_per_city %}
+<div class="d-grid mt-4">
+    <form method="POST" action="{{ url_for('kmeans_bp.save_to_table') }}">
+        <button type="submit" class="btn btn-success">Simpan ke Tabel</button>
+    </form>
+</div>
+{% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

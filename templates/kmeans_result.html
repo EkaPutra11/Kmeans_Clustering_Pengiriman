@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}
+KMeans Result
+{% endblock %}
+
+{% block content %}
+<h1>KMeans Result</h1>
+
+<!-- Pesan Flash -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div>
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+{% endwith %}
+
+<!-- Form Filter Tanggal -->
+<!-- <form method="get" action="{{ url_for('kmeans_bp.kmeans_result') }}" class="d-flex flex-wrap mb-3 gap-2">
+    <div class="d-flex flex-column">
+        <label for="start_date">Start Date:</label>
+        <input 
+            type="date" 
+            id="start_date" 
+            name="start_date" 
+            class="form-control" 
+            value="{{ start_date }}">
+    </div>
+    <div class="d-flex flex-column">
+        <label for="end_date">End Date:</label>
+        <input 
+            type="date" 
+            id="end_date" 
+            name="end_date" 
+            class="form-control" 
+            value="{{ end_date }}">
+    </div>
+    <div class="d-flex flex-column">
+        <label>&nbsp;</label>
+        <button type="submit" class="btn btn-primary">Filter</button>
+    </div>
+</form> -->
+
+<!-- Highlight Jumlah Cluster -->
+<div class="d-flex flex-wrap gap-3 mb-4 align-items-center">
+    <!-- Highlight Cluster 1 -->
+    <div class="p-3 border rounded bg-success text-white text-center" style="min-width: 150px;">
+        <h5 class="mb-1">Jumlah Cluster 1</h5>
+        <p class="mb-0 fs-5"><strong>Total: {{ total_cluster_1 }}</strong></p>
+    </div>
+    <!-- Highlight Cluster 2 -->
+    <div class="p-3 border rounded bg-info text-white text-center" style="min-width: 150px;">
+        <h5 class="mb-1">Jumlah Cluster 2</h5>
+        <p class="mb-0 fs-5"><strong>Total: {{ total_cluster_2 }}</strong></p>
+    </div>
+    <!-- Button Delete All Data -->
+    <div>
+        <form method="POST" action="{{ url_for('kmeans_bp.delete_kmeans_result') }}">
+            <button type="submit" class="btn btn-danger" 
+                onclick="return confirm('Apakah Anda yakin ingin menghapus semua data di tabel KMeans Result?')">
+                Hapus Semua Data
+            </button>
+        </form>
+    </div>
+</div>
+
+
+
+<!-- Search Form -->
+<form method="get" action="{{ url_for('kmeans_bp.kmeans_result') }}" class="d-flex w-100 mb-3">
+    <input 
+        type="text" 
+        name="search" 
+        class="form-control me-2" 
+        placeholder="Search by City, Vendor, or STT Number" 
+        value="{{ search_query }}">
+    <button type="submit" class="btn btn-primary">Search</button>
+</form>
+
+<!-- Tabel Data -->
+<div class="table-responsive" style="max-height: 500px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 5px;">
+    <table class="table table-striped mb-0">
+        <thead style="position: sticky; top: 0; background-color: #f8f9fa; z-index: 1;">
+            <tr>
+                <th>STT Number</th>
+                <th>Destination City</th>
+                <th>Gap Hours</th>
+                <th>Cluster Label</th>
+                <th>Vendor</th>
+                <th>Status</th>
+                <th>Booking Date</th> <!-- Tambahkan kolom Booking Date -->
+                <th>POD At</th> <!-- Tambahkan kolom POD At -->
+            </tr>
+        </thead>
+        <tbody>
+            {% if data %}
+                {% for row in data %}
+                <tr>
+                    <td>{{ row['stt_number_genesis'] }}</td>
+                    <td>{{ row['destination_city'] }}</td>
+                    <td>{{ row['gap_hours'] }}</td>
+                    <td>{{ row['cluster_label'] }}</td>
+                    <td>{{ row['vendor'] }}</td>
+                    <td>{{ row['status'] }}</td>
+                    <td>{{ row['booking_date'] or 'N/A' }}</td> <!-- Tampilkan Booking Date -->
+                    <td>{{ row['pod_at'] or 'N/A' }}</td> <!-- Tampilkan POD At -->
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="9" class="text-center">No data available.</td> <!-- Sesuaikan colspan -->
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination -->
+<div class="d-flex justify-content-between align-items-center mt-4">
+    <div>
+        <p class="mb-0">Results: {{ (page - 1) * per_page + 1 }} - {{ page * per_page if page * per_page < total_count else total_count }} of {{ total_count }}</p>
+    </div>
+    <nav>
+        <ul class="pagination mb-0">
+            {% if page > 1 %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('kmeans_bp.kmeans_result', page=1, per_page=per_page, search=search_query) }}">&laquo;</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('kmeans_bp.kmeans_result', page=page-1, per_page=per_page, search=search_query) }}">&lt;</a>
+            </li>
+            {% endif %}
+            {% for p in range(1, total_pages + 1) %}
+            {% if p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
+            <li class="page-item {% if page == p %}active{% endif %}">
+                <a class="page-link" href="{{ url_for('kmeans_bp.kmeans_result', page=p, per_page=per_page, search=search_query) }}">{{ p }}</a>
+            </li>
+            {% elif p == page - 3 or p == page + 3 %}
+            <li class="page-item disabled"><a class="page-link">...</a></li>
+            {% endif %}
+            {% endfor %}
+            {% if page < total_pages %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('kmeans_bp.kmeans_result', page=page+1, per_page=per_page, search=search_query) }}">&gt;</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('kmeans_bp.kmeans_result', page=total_pages, per_page=per_page, search=search_query) }}">&raquo;</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    <!-- Dropdown untuk jumlah data per halaman -->
+    <div class="d-flex align-items-center gap-2">
+        <label for="resultsPerPage" class="me-2">Show:</label>
+        <select id="resultsPerPage" class="form-select d-inline-block" style="width: auto;" onchange="changePerPage(this.value)">
+            <option value="10" {% if per_page == 10 %}selected{% endif %}>10</option>
+            <option value="25" {% if per_page == 25 %}selected{% endif %}>25</option>
+            <option value="50" {% if per_page == 50 %}selected{% endif %}>50</option>
+            <option value="100" {% if per_page == 100 %}selected{% endif %}>100</option>
+        </select>
+    </div>
+</div>
+
+<script>
+// JavaScript untuk mengganti jumlah data per halaman
+function changePerPage(perPage) {
+    const currentUrl = new URL(window.location.href);
+    currentUrl.searchParams.set('per_page', perPage);
+    currentUrl.searchParams.set('page', 1); // Reset ke halaman 1
+    window.location.href = currentUrl;
+}
+</script>
+
+
+{% endblock %}

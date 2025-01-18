@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}
+Elbow Method Optimization
+{% endblock %}
+
+{% block content %}
+<h1>Elbow Method Optimization</h1>
+
+<!-- Form Input Parameters -->
+<form method="POST" action="{{ url_for('kmeans_bp.elbow_optimization') }}" class="mb-4">
+    <div class="row">
+        <div class="col-md-4">
+            <label for="cluster_start" class="form-label">Jumlah Cluster Mulai:</label>
+            <input type="number" name="cluster_start" id="cluster_start" class="form-control" value="{{ cluster_start }}" min="1" required>
+        </div>
+        <div class="col-md-4">
+            <label for="cluster_end" class="form-label">Jumlah Cluster Akhir:</label>
+            <input type="number" name="cluster_end" id="cluster_end" class="form-control" value="{{ cluster_end }}" min="1" required>
+        </div>
+        <div class="col-md-4">
+            <label for="max_iter" class="form-label">Maksimum Iterasi:</label>
+            <input type="number" name="max_iter" id="max_iter" class="form-control" value="{{ max_iter }}" min="1" required>
+        </div>
+    </div>
+    <div class="mt-3">
+        <button type="submit" class="btn btn-primary">Generate Elbow</button>
+    </div>
+</form>
+
+<!-- Tabel Hasil Perhitungan -->
+<h2>Hasil Perhitungan SSE</h2>
+<div class="table-wrapper" style="height: 400px; overflow-y: auto;">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Jumlah Cluster</th>
+                <th>SSE</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for result in results %}
+            <tr>
+                <td>{{ result.cluster }}</td>
+                <td>{{ result.sse }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Grafik Elbow -->
+{% if graph_data %}
+<h2>Grafik Elbow</h2>
+<div class="text-center">
+    <img src="data:image/png;base64,{{ graph_data }}" alt="Elbow Graph" class="img-fluid">
+</div>
+{% endif %}
+{% endblock %}

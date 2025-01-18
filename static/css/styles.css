@@ -1,0 +1,62 @@
+/* Aturan untuk tata letak halaman */
+body {
+    display: flex;
+    height: 100vh;
+    margin: 0;
+}
+
+/* Aturan untuk sidebar */
+.sidebar {
+    width: 250px;
+    background-color: #343a40;
+    color: rgb(0, 0, 0);
+    padding-top: 20px;
+}
+
+.sidebar a {
+    color: white;
+    text-decoration: none;
+    padding: 10px;
+    display: block;
+}
+
+.sidebar a:hover {
+    background-color: #495057;
+}
+
+/* Aturan untuk konten utama */
+.content {
+    flex-grow: 1;
+    padding: 20px;
+}
+
+
+
+/* Aturan untuk sidebar */
+.sidebar {
+    width: 250px;
+    min-width: 250px;
+    max-width: 250px;
+    position: fixed;
+    height: 100vh;
+    background-color: #0080ff;
+    overflow-y: auto;
+}
+
+.content {
+    margin-left: 250px;
+    padding: 20px;
+}
+
+/* Aturan untuk tabel */
+.content table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+
+.table-wrapper {
+    height: 500px; /* Kunci tinggi tabel */
+    overflow-y: auto; /* Tambahkan scroll jika data melebihi tinggi */
+}

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hasil KMeans</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        table th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hasil KMeans</h1>
+
+    <div style="margin-bottom: 20px;">
+        <h3>Total Cluster</h3>
+        <p>Cluster 1: {{ total_cluster_1 }}</p>
+        <p>Cluster 2: {{ total_cluster_2 }}</p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>STT Number</th>
+                <th>Destination City</th>
+                <th>Gap Hours</th>
+                <th>Vendor</th>
+                <th>Status</th>
+                <th>Cluster</th>
+                <th>Booking Date</th>
+                <th>POD Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in data %}
+            <tr>
+                <td>{{ row.stt_number_genesis }}</td>
+                <td>{{ row.destination_city }}</td>
+                <td>{{ row.gap_hours }}</td>
+                <td>{{ row.vendor }}</td>
+                <td>{{ row.status }}</td>
+                <td>{{ row.cluster_label }}</td>
+                <td>{{ row.booking_date }}</td>
+                <td>{{ row.pod_at }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
