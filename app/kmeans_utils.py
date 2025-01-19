@@ -1,32 +1,4 @@
-import datetime
 import numpy as np
-
-# def calculate_gap_hours(booking_date, pod_date):
-#     """
-#     Menghitung selisih waktu dalam jam antara booking_date dan pod_date.
-
-#     Args:
-#         booking_date (str/datetime): Tanggal booking (format string atau datetime.datetime).
-#         pod_date (str/datetime): Tanggal POD (format string atau datetime.datetime).
-
-#     Returns:
-#         float: Selisih waktu dalam jam.
-#     """
-#     # Format datetime untuk parsing string
-#     format = "%Y-%m-%d %H:%M:%S"
-
-#     # Pastikan booking_date adalah objek datetime
-#     if isinstance(booking_date, str):
-#         booking_date = datetime.datetime.strptime(booking_date.split('+')[0].strip(), format)
-    
-#     # Pastikan pod_date adalah objek datetime
-#     if isinstance(pod_date, str):
-#         pod_date = datetime.datetime.strptime(pod_date.split('+')[0].strip(), format)
-
-#     # Hitung selisih waktu dalam jam
-#     gap = (pod_date - booking_date).total_seconds() / 3600
-#     return gap
-
 
 def kmeans_manual(data, k, max_iterations, return_iterations=False, initial_centroids=None):
     """
@@ -46,29 +18,31 @@ def kmeans_manual(data, k, max_iterations, return_iterations=False, initial_cent
             sse (float): Jumlah kuadrat kesalahan untuk seluruh cluster.
             all_iterations (list): Detail per iterasi, jika return_iterations=True.
     """
-    import numpy as np
-
     # Konversi data ke numpy array jika belum
     data = np.array(data)
 
     # Inisialisasi centroid
     if initial_centroids is not None:
-        # Gunakan centroid yang diberikan
-        centroids = np.array(initial_centroids)
+        centroids = np.array(initial_centroids)  # Gunakan centroid awal yang diberikan
     else:
-        # Pilih centroid secara acak dari data
-        np.random.seed(42)  # Untuk memastikan hasil dapat direproduksi
-        centroids = data[np.random.choice(data.shape[0], k, replace=False)]
+        np.random.seed(42)  # Seed untuk hasil yang konsisten
+        centroids = data[np.random.choice(data.shape[0], k, replace=False)]  # Pilih centroid secara acak
 
-    clusters = np.zeros(data.shape[0], dtype=int)
-    all_iterations = []  # Untuk menyimpan hasil setiap iterasi
+    clusters = np.zeros(data.shape[0], dtype=int)  # Inisialisasi cluster awal
+    all_iterations = []  # Simpan hasil iterasi
 
     for iteration in range(max_iterations):
-        # Hitung Euclidean distance dan tentukan cluster
-        distances = np.array([[np.linalg.norm(point - centroid) for centroid in centroids] for point in data])
+        # Hitung jarak Euclidean antara setiap titik data dan setiap centroid
+        distances = []
+        for point in data:
+            distance_to_centroids = [np.linalg.norm(point - centroid) for centroid in centroids]
+            distances.append(distance_to_centroids)
+        distances = np.array(distances)
+
+        # Tentukan cluster baru berdasarkan centroid terdekat
         new_clusters = np.argmin(distances, axis=1)
 
-        # Simpan detail per iterasi jika diminta
+        # Simpan detail iterasi jika diminta
         if return_iterations:
             all_iterations.append({
                 "centroids": centroids.copy(),
@@ -76,22 +50,23 @@ def kmeans_manual(data, k, max_iterations, return_iterations=False, initial_cent
                 "clusters": new_clusters.copy()
             })
 
-        # Pengecekan konvergensi
+        # Hentikan iterasi jika cluster tidak berubah
         if np.array_equal(new_clusters, clusters):
             break
         clusters = new_clusters
 
-        # Perbarui centroid sebagai rata-rata dari semua titik dalam cluster
+        # Perbarui centroid sebagai rata-rata titik dalam cluster
         for i in range(k):
             points_in_cluster = data[clusters == i]
             if len(points_in_cluster) > 0:
                 centroids[i] = points_in_cluster.mean(axis=0)
 
-    # Hitung Sum of Squared Errors (SSE)
-    sse = sum(
-        np.linalg.norm(data[clusters == i] - centroids[i]) ** 2
-        for i in range(k)
-    )
+    # Hitung SSE (Sum of Squared Errors)
+    sse = 0
+    for i in range(k):
+        points_in_cluster = data[clusters == i]
+        if len(points_in_cluster) > 0:
+            sse += np.sum((points_in_cluster - centroids[i]) ** 2)
 
     if return_iterations:
         return clusters, centroids, sse, all_iterations
