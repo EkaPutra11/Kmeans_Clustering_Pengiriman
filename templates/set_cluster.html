@@ -24,21 +24,22 @@ Set Cluster
     {% endwith %}
 
     <!-- Form Input -->
-    <form method="POST" action="{{ url_for('kmeans_bp.set_cluster') }}">
-        <div class="mb-3">
-            <label for="num_clusters" class="form-label">Jumlah Cluster</label>
-            <input type="number" name="num_clusters" id="num_clusters" class="form-control" min="1" placeholder="Masukkan jumlah cluster" required>
-        </div>
+<form method="POST" action="{{ url_for('kmeans_bp.set_cluster') }}">
+    <div class="mb-3">
+        <label for="num_clusters" class="form-label">Jumlah Cluster</label>
+        <input type="number" name="num_clusters" id="num_clusters" class="form-control" value="2" readonly>
+    </div>
 
-        <div class="mb-3">
-            <label for="max_iter" class="form-label">Iterasi Maksimum</label>
-            <input type="number" name="max_iter" id="max_iter" class="form-control" min="1" placeholder="Masukkan jumlah iterasi maksimum" required>
-        </div>
+    <div class="mb-3">
+        <label for="max_iter" class="form-label">Iterasi Maksimum</label>
+        <input type="number" name="max_iter" id="max_iter" class="form-control" min="1" placeholder="Masukkan jumlah iterasi maksimum" required>
+    </div>
 
-        <div class="d-grid">
-            <button type="submit" class="btn btn-primary">Simpan</button>
-        </div>
-    </form>
+    <div class="d-grid">
+        <button type="submit" class="btn btn-primary">Simpan</button>
+    </div>
+</form>
+
 
     <!-- Tombol Reset -->
     {% if iteration_results_per_city or cluster_summary_per_city %}

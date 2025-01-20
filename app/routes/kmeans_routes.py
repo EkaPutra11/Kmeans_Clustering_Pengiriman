@@ -433,7 +433,7 @@ def set_cluster():
 
             for city in df['destination_city'].unique():
                 city_data = df[df['destination_city'] == city]
-                features = city_data['gap_hours'].values.astype(float)  # Pastikan tipe data numerik
+                features = city_data['gap_hours'].values.astype(int)  # Pastikan tipe data numerik
                 vendors = city_data['vendor'].values  # Ambil data vendor untuk kota ini
                 stt_numbers = city_data['stt_number_genesis'].values  # Ambil data stt_number_genesis untuk kota ini
 
@@ -494,7 +494,7 @@ def set_cluster():
             total_cluster_2 = sum(summary['clusters'].count(1) for summary in cluster_summary_per_city.values())
 
             # Hitung akurasi total
-            total_accuracy = (1 - (total_sse / total_variance)) * 100 if total_variance > 0 else 0
+            # total_accuracy = (1 - (total_sse / total_variance)) * 100 if total_variance > 0 else 0
 
             # Simpan hasil ke file sementara
             results_dir = os.path.join(current_app.root_path, 'results')
@@ -505,7 +505,7 @@ def set_cluster():
                 results_data = {
                     "iteration_results_per_city": iteration_results_per_city,
                     "cluster_summary_per_city": cluster_summary_per_city,
-                    "total_accuracy": total_accuracy,
+                    # "total_accuracy": total_accuracy,
                     "num_clusters": num_clusters,  # Simpan num_clusters
                     "cluster_averages": cluster_averages  # Tambahkan rata-rata cluster
                 }
@@ -526,7 +526,7 @@ def set_cluster():
     iteration_results_per_city = {}
     cluster_summary_per_city = {}
     cluster_averages = {}
-    total_accuracy = 0
+    # total_accuracy = 0
     total_cluster_1 = 0  # Inisialisasi variabel
     total_cluster_2 = 0  # Inisialisasi variabel
     num_clusters = 0  # Inisialisasi default
@@ -539,7 +539,7 @@ def set_cluster():
                 iteration_results_per_city = results.get('iteration_results_per_city', {})
                 cluster_summary_per_city = results.get('cluster_summary_per_city', {})
                 cluster_averages = results.get('cluster_averages', {})
-                total_accuracy = results.get('total_accuracy', 0)
+                # total_accuracy = results.get('total_accuracy', 0)
                 num_clusters = results.get('num_clusters', 0)  # Ambil num_clusters dari file
                 total_cluster_1 = sum(summary['clusters'].count(0) for summary in cluster_summary_per_city.values())
                 total_cluster_2 = sum(summary['clusters'].count(1) for summary in cluster_summary_per_city.values())
@@ -551,7 +551,7 @@ def set_cluster():
         cluster_averages=cluster_averages,  # Kirim rata-rata cluster ke template
         total_cluster_1=total_cluster_1,
         total_cluster_2=total_cluster_2,
-        total_accuracy=total_accuracy,
+        # total_accuracy=total_accuracy,
         enumerate=enumerate,
         zip=zip
     )
